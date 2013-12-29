@@ -1,6 +1,6 @@
 # karma-batch
 
-A Node.js cript to easily invoke Karma in batch mode.
+A Node.js script to easily invoke Karma in batch mode.
 
 ### Installation
 

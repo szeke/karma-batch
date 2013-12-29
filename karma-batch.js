@@ -24,35 +24,6 @@ if (argv.h) {
 	process.exit(code=0);
 }
 
-// http://davidwalsh.name/sync-exec
-
-var rdfGen3 = {
-	karmaHome : "/Users/szekely/Web-Karma/" ,
-	modelsDir : "/Users/szekely/karma-artist/karma-models" ,
-	filesDir : "/Users/szekely/karma-artist/datasets" ,
-	rdfDir : "/Users/szekely/karma-artist/rdf" ,
-	clearEndpoint : true ,
-	endpoint : "http://localhost:8080/openrdf-sesame/repositories/artist" ,
-	filesAndModels : [
-		{
-			file : "allArtistsData19557.json" , model : "artists-model.txt"
-		}
-		, 
-		{
-			file : "songkick.json" , model : "songkick-model.txt"
-		}
-		,
-		{
-			file : "allBandsList.json" , model : "bands-model.txt"
-		}
-		,
-		{
-			file : "albumsAwards.json" , model : "album-awards-model.txt"
-		}
-	]
-}
-
-
 
 function execSyncInKarmaHome(cmd) {
 	execSync("cd "+spec.karmaHome+";"+cmd);
@@ -169,17 +140,6 @@ if (spec.endpoint && !argv.noTripleStoreLoad) {
 	console.log('Loading data to ' + spec.endpoint);
 	postRdfToEndpoint(spec);
 }
-//exec("ls -l "+ spec.rdfDir, puts);
 
-//clearEndpoint(spec);
-//postRdfToEndpoint(spec);
-
-
-
-		// mvn exec:java -Dexec.mainClass="edu.isi.karma.rdf.OfflineRdfGenerator" -Dexec.args="
-		// --sourcetype JSON 
-		// --filepath \"/Users/shubhamgupta/Documents/wikipedia.json\" 
-		// --modelfilepath \"/Users/shubhamgupta/Documents/model-wikipedia.n3\" 
-		// --outputfile wikipedia-rdf.n3"
 
 

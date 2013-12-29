@@ -44,3 +44,10 @@ You can optionally post the generated RDF files to a SPARQL endpoint.
 }
 ```
 
+### Caveats
+
+- The implementation of the functions to POST the generated RDF to a triple store is very naive as it loads the whole RDF file into memory. 
+    - A better implementation is welcome.
+- Error checking is rudimentary.
+- Does not show console output from RDF generation process. If something goes wrong you will not get a file, but will not get an error message. 
+    - I don't know how to capture the output of the child process. Please let me know if you know how to do this.

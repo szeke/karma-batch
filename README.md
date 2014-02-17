@@ -6,11 +6,11 @@ A Node.js script to easily invoke Karma in batch mode.
 
 You need to have [Node.js](http://nodejs.org/) installed. Then download `karma-batch` and execute the following command in the directory where you cloned this repository. You need to do this to download additional packages.
 
-`npm install date-format-lite sys exec-sync shred optimist`
+`npm install date-format-lite sys exec-sync shred optimist request async cron time`
 
 ### Usage
 
-Typical invocation: `node karma-batch.js <spec-file>`
+Typical invocation: `node karma-batch.js <spec-file>` OR `node karma-batch.js --cron <spec-file>`
 
 Type `node karma-batch.js -h` to see the available options.
 

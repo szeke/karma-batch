@@ -5,12 +5,17 @@ var fs = require('fs')
   , execSync = require("exec-sync")
   , Shred = require("shred")
   , optimist = require('optimist')
+  , request = require('request')
+  , async = require('async')
+  , cronJob = require('cron').CronJob
+  , time = require("time")
 ;
 
 var argv = optimist
 	.usage('Apply Karma models to files and load them in a triple store\nUsage: $0 spec-file')
 	.demand(1)
-	.boolean('noTripleStoreLoad')
+	.boolean(['noTripleStoreLoad', 'cron'])
+	.describe('cron', "Run as cron")
 	.describe('noTripleStoreLoad', "Don't post the generated RDF to the SPARQL endpoint")
 	.describe('h', 'Show usage/help')
 	.argv;
@@ -64,9 +69,53 @@ function runOfflineRdfGeneratorOnce(record, spec) {
 }
 
 function runOfflineRdfGenerator(spec) {
+	if (spec.endpoint && spec.clearEndpoint) {
+		clearEndpoint(spec);
+	}
+
 	spec.filesAndModels.map(function(record) {
 		console.log("record:"+record);
-		runOfflineRdfGeneratorOnce(record, spec);
+
+		var runGenerator = false;
+		async.series([
+			function (callback) {
+				var req = request("https://raw2.github.com/chetanme/karma-tutorial/master/datasets/" + record.file)
+							
+				req.pipe(fs.createWriteStream(spec.filesDir + '/temp-' + record.file + ''));
+
+				req.on ("end", function() {
+					callback();
+				});
+			}, function (callback) {
+				var stats = fs.statSync(spec.filesDir + '/' + record.file + '');
+				var tStats = fs.statSync(spec.filesDir + '/temp-' + record.file + '');
+
+				tStats["size"] += 1;
+				//console.log("1111 :-" + stats["size"]);
+				//console.log("2222 :-" + tStats["size"]);
+
+				if (stats["size"] != tStats["size"]) {
+					fs.renameSync(spec.filesDir + '/temp-' + record.file + '', spec.filesDir + '/' + record.file + '');
+					runGenerator = true;
+				} else {
+					fs.delete(spec.filesDir + '/temp-' + record.file + '');
+				}
+
+				callback();
+			}, function (callback) {
+				if (runGenerator) {
+					runOfflineRdfGeneratorOnce(record, spec);
+				} else {
+					console.log("Rdf Generation not required for " + record.file);
+				}
+				callback();
+			}, function () {
+				if (spec.endpoint && !argv.noTripleStoreLoad) {
+					console.log('Loading data to ' + spec.endpoint);
+					postRdfToEndpointOnce(record, spec);
+				}
+			}
+		]);
 	});
 }
 
@@ -93,7 +142,7 @@ function postRdfToEndpointOnce(record, spec) {
 	      },
 	      // Any other response means something's wrong
 	      response: function(response) {
-	        console.log("Oh no!");
+	        console.log("Oh noaaa!");
 	        console.log(response);
 	      }
 	    }
@@ -102,11 +151,11 @@ function postRdfToEndpointOnce(record, spec) {
   });
 }
 
-function postRdfToEndpoint(spec) {
+/*function postRdfToEndpoint(spec) {
 	spec.filesAndModels.map(function(record) {
 		postRdfToEndpointOnce(record, spec);
 	});
-}
+}*/
 
 function clearEndpoint(spec) {
 	var shred = new Shred();
@@ -129,17 +178,10 @@ function clearEndpoint(spec) {
 }
 
 // Do it
-
 runOfflineRdfGenerator(spec);
 
-if (spec.endpoint && spec.clearEndpoint) {
-	clearEndpoint(spec);
+if (argv.cron) {
+	new cronJob('1 * * * * *', function() {
+		runOfflineRdfGenerator(spec);		
+	}, null, true, "America/Los_Angeles");
 }
-
-if (spec.endpoint && !argv.noTripleStoreLoad) {
-	console.log('Loading data to ' + spec.endpoint);
-	postRdfToEndpoint(spec);
-}
-
-
-

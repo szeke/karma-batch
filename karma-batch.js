@@ -79,7 +79,7 @@ function runOfflineRdfGenerator(spec) {
 		var runGenerator = false;
 		async.series([
 			function (callback) {
-				var req = request("https://raw2.github.com/chetanme/karma-tutorial/master/datasets/" + record.file)
+				var req = request("https://raw.github.com/szeke/karma-tutorial/master/datasets/" + record.file)
 							
 				req.pipe(fs.createWriteStream(spec.filesDir + '/temp-' + record.file + ''));
 
@@ -181,7 +181,7 @@ function clearEndpoint(spec) {
 runOfflineRdfGenerator(spec);
 
 if (argv.cron) {
-	new cronJob('1 * * * * *', function() {
+	new cronJob('45 * * * * *', function() {
 		runOfflineRdfGenerator(spec);		
 	}, null, true, "America/Los_Angeles");
 }
